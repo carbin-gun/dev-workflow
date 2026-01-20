@@ -12,3 +12,4 @@ This skill will:
 - Generate `docs/requirements.md`
 
 Run `/dev-workflow:requirements` to start.
+Invoke the dev-workflow:requirements skill and follow it exactly as presented to you

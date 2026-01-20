@@ -13,4 +13,5 @@ This skill will:
 
 Prerequisites: `docs/architecture.md` and `docs/api-contracts/*.yaml` must exist.
 
-Run `/dev-workflow:frontend` to start.
+Invoke the dev-workflow:frontend skill and follow it exactly as presented to you
+

@@ -13,4 +13,4 @@ This skill will:
 
 Workflow: Requirements → Architecture → Storage → Development → QA
 
-Run `/dev-workflow:master` to start or resume the full workflow.
+Invoke the dev-workflow:master skill and follow it exactly as presented to you
