@@ -11,11 +11,12 @@
   "plugins": [
     {
       "name": "dev-workflow",
-      "source": ".",
       "description": "Complete development workflow: requirements gathering, architecture design, storage design, backend/frontend development, and QA testing",
       "version": "1.0.0",
+      "source": "./",
       "author": {
-        "name": "carbin-gun"
+        "name": "carbin-gun",
+        "email": "cilendeng@gmail.com"
       },
       "keywords": ["workflow", "requirements", "architecture", "backend", "frontend","test", "qa", "ddd"],
       "category": "productivity"
