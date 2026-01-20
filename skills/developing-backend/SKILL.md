@@ -13,13 +13,15 @@ Develop a backend system using Go + Gin + gRPC + sqlx with DDD (Domain-Driven De
 
 ## Prerequisites
 
-**Required** (for target system):
+**Required**:
 - `docs/architecture.md`
-- `docs/storage/<system>.md`
-- `docs/api-contracts/<system>.yaml`
-- `docs/grpc-contracts/*.proto` (if system has gRPC communication)
+- `docs/storage/backend.md`
+- `docs/api-contracts/api.yaml`
+- `docs/grpc-contracts/*.proto` (if gRPC communication needed)
 
 **Check**: If any missing, prompt user to complete preceding stages.
+
+**Note**: Frontend does NOT need to be complete. Backend and frontend can develop in parallel using shared API contracts.
 
 ## Tech Stack
 
@@ -79,8 +81,10 @@ func (r *UserRepo) FindByEmail(email string) (*User, error) {
 
 ## Project Structure (DDD)
 
+**Location**: All backend code goes in `backend/` directory at project root.
+
 ```
-<backend-system>/
+backend/
 ├── cmd/
 │   └── server/
 │       └── main.go              # Entry point
@@ -103,27 +107,33 @@ func (r *UserRepo) FindByEmail(email string) (*User, error) {
 │       │   └── router/
 │       └── grpc/               # gRPC servers
 ├── pkg/                        # Shared packages
-├── api/                        # API definitions
-│   ├── openapi/               # OpenAPI specs (copy from docs)
-│   └── proto/                 # Proto files (copy from docs)
+├── api/                        # API definitions (copy from docs)
+│   ├── openapi/
+│   └── proto/
 ├── migrations/                 # Database migrations
-├── Dockerfile
-├── docker-compose.yaml
+├── Dockerfile                  # Backend standalone build
+├── docker-compose.yaml         # Backend standalone run (with DB)
 ├── Makefile
 ├── go.mod
 └── README.md
 ```
+
+**Key Layout Rules:**
+- Backend code ONLY in `backend/` (not `backend-user/`, `backend-order/`)
+- Documentation stays in `docs/` at project root
+- Backend has its own `docker-compose.yaml` for standalone operation
+- Root `docker-compose.yaml` orchestrates full stack
 
 ## Process
 
 ### Step 1: Initialize Project
 
 ```bash
-mkdir <system-name> && cd <system-name>
+mkdir -p backend && cd backend
 go mod init <module-path>
 ```
 
-Create directory structure as above.
+Create directory structure as above. All backend code lives in `backend/` at project root.
 
 ### Step 2: Implement Domain Layer
 
@@ -207,11 +217,11 @@ EXPOSE 8080
 CMD ["./server"]
 ```
 
-**docker-compose.yaml**:
+**backend/docker-compose.yaml** (standalone - run backend only):
 ```yaml
 version: '3.8'
 services:
-  app:
+  backend:
     build: .
     ports:
       - "8080:8080"
@@ -231,6 +241,45 @@ services:
 volumes:
   pgdata:
 ```
+
+**Root docker-compose.yaml** (full stack - backend + frontend):
+```yaml
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_URL=http://backend:8080
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: <dbname>
+      POSTGRES_USER: <user>
+      POSTGRES_PASSWORD: <password>
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+```
+
+**Startup Options:**
+- `cd backend && docker-compose up` - Backend only (for backend development)
+- `docker-compose up` (from root) - Full stack (for integration testing)
 
 **Makefile**:
 ```makefile
@@ -252,34 +301,221 @@ docker-down:
 	docker-compose down
 ```
 
-### Step 7: Delivery Verification (MANDATORY)
+### Step 7: Write Unit Tests (MANDATORY)
 
-**After coding, MUST execute these checks:**
+**Every backend MUST have unit tests covering:**
 
-#### 7.1 Compile Check
+#### 7.1 Test Structure
+```
+backend/
+├── internal/
+│   ├── domain/
+│   │   ├── entity/
+│   │   │   └── user_test.go          # Entity tests
+│   │   └── service/
+│   │       └── user_service_test.go  # Domain service tests
+│   ├── application/
+│   │   └── usecase/
+│   │       └── create_user_test.go   # Use case tests
+│   └── interfaces/
+│       └── http/
+│           └── handler/
+│               └── user_handler_test.go  # Handler tests
+```
+
+#### 7.2 Test Coverage Requirements
+
+| Layer | What to Test | Min Coverage |
+|-------|--------------|--------------|
+| **Domain Entity** | Validation, business rules | 80% |
+| **Domain Service** | Domain logic | 80% |
+| **Use Case** | Business flow, error handling | 70% |
+| **Handler** | Request/response, status codes | 70% |
+| **Repository** | CRUD operations (with test DB) | 60% |
+
+#### 7.3 Test Example
+```go
+// internal/domain/entity/user_test.go
+func TestUser_Validate(t *testing.T) {
+    tests := []struct {
+        name    string
+        user    User
+        wantErr bool
+    }{
+        {"valid user", User{Email: "test@example.com", Name: "Test"}, false},
+        {"empty email", User{Email: "", Name: "Test"}, true},
+        {"invalid email", User{Email: "invalid", Name: "Test"}, true},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := tt.user.Validate()
+            if (err != nil) != tt.wantErr {
+                t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+            }
+        })
+    }
+}
+```
+
+#### 7.4 Run Tests
+```bash
+go test ./... -v
+go test ./... -cover  # Check coverage
+```
+- ALL tests MUST pass
+- If fails: fix and retry
+
+### Step 8: Requirements & Contract Compliance Check (MANDATORY)
+
+**Before delivery, verify implementation matches requirements, contracts, AND business logic.**
+
+#### 8.1 API Contract Compliance
+
+Read `docs/api-contracts/api.yaml` and verify EACH endpoint:
+
+| Check | How to Verify |
+|-------|---------------|
+| **Endpoint exists** | Handler implemented for each path |
+| **Request schema** | Go struct matches OpenAPI schema exactly |
+| **Response schema** | Response DTO matches OpenAPI schema exactly |
+| **Status codes** | All documented codes handled (200, 400, 401, 404, 500) |
+| **Error format** | Error response matches contract error schema |
+
+**Create API compliance matrix (MUST present to user):**
+```
+API Contract Compliance:
+
+| Endpoint | Handler | Request ✓ | Response ✓ | Errors ✓ |
+|----------|---------|-----------|------------|----------|
+| POST /api/v1/users | CreateUser | ✓ | ✓ | ✓ |
+| GET /api/v1/users/:id | GetUser | ✓ | ✓ | ✓ |
+| PUT /api/v1/users/:id | UpdateUser | ✓ | ✓ | ✓ |
+| DELETE /api/v1/users/:id | DeleteUser | ✓ | ✓ | ✓ |
+
+All endpoints implemented: YES/NO
+```
+
+#### 8.2 Business Logic Verification (MUST GET USER ACKNOWLEDGEMENT)
+
+**For EACH User Story in requirements, verify business logic:**
+
+```
+Business Logic Verification:
+
+US-001: User Registration
+├── Business Rule: Email must be unique
+│   └── Implementation: UserRepo.FindByEmail() check in CreateUserUseCase
+│   └── Test: TestCreateUser_DuplicateEmail
+├── Business Rule: Password minimum 8 characters
+│   └── Implementation: User.Validate() in domain/entity/user.go
+│   └── Test: TestUser_Validate_PasswordTooShort
+├── Business Rule: Send welcome email after registration
+│   └── Implementation: EmailService.SendWelcome() in CreateUserUseCase
+│   └── Test: TestCreateUser_SendsWelcomeEmail
+└── Status: IMPLEMENTED / PARTIAL / NOT IMPLEMENTED
+
+US-002: User Login
+├── Business Rule: Lock account after 5 failed attempts
+│   └── Implementation: LoginAttemptService in application/service/
+│   └── Test: TestLogin_AccountLocked
+├── Business Rule: JWT token expires in 24 hours
+│   └── Implementation: JWTConfig.Expiration = 24h
+│   └── Test: TestLogin_TokenExpiration
+└── Status: IMPLEMENTED / PARTIAL / NOT IMPLEMENTED
+```
+
+**STOP AND ASK USER:**
+```
+请确认以下业务逻辑实现是否正确：
+
+1. US-001 用户注册：
+   - [x] 邮箱唯一性检查 → CreateUserUseCase 第 45 行
+   - [x] 密码最少 8 位 → User.Validate() 第 23 行
+   - [x] 注册后发送欢迎邮件 → CreateUserUseCase 第 67 行
+
+2. US-002 用户登录：
+   - [x] 5 次失败后锁定账户 → LoginAttemptService 第 34 行
+   - [x] JWT 24 小时过期 → config/jwt.go 第 12 行
+
+以上业务逻辑实现是否符合预期？有需要调整的吗？
+```
+
+**DO NOT proceed until user acknowledges business logic is correct.**
+
+#### 8.3 Acceptance Criteria Verification
+
+**Map EACH acceptance criterion to code/test:**
+
+```
+Acceptance Criteria Traceability:
+
+| AC ID | Description | Implementation | Test |
+|-------|-------------|----------------|------|
+| AC-001 | Password hashed with bcrypt | usecase/create_user.go:56 | TestCreateUser_PasswordHashed |
+| AC-002 | Return 401 for invalid credentials | handler/auth.go:78 | TestLogin_InvalidCredentials |
+| AC-003 | Pagination supports page/size | handler/user.go:112 | TestListUsers_Pagination |
+```
+
+#### 8.4 List All Assumptions
+
+```bash
+grep -r "ASSUMPTION" internal/
+```
+
+**Present ALL assumptions to user for verification:**
+```
+以下是开发过程中做出的假设，请确认：
+
+1. ASSUMPTION: 邮箱大小写不敏感
+   - 位置: internal/infrastructure/persistence/user_repo.go:45
+   - 影响: 查询时使用 LOWER(email)
+   - 确认: [需要确认]
+
+2. ASSUMPTION: 删除用户为软删除
+   - 位置: internal/domain/entity/user.go:89
+   - 影响: 使用 deleted_at 字段
+   - 确认: [需要确认]
+
+请逐一确认或调整。
+```
+
+**DO NOT proceed until user confirms all assumptions.**
+
+### Step 9: Delivery Verification (MANDATORY)
+
+**After tests pass and compliance checked, execute these checks:**
+
+#### 9.1 Compile Check
 ```bash
 go build ./...
 ```
 - MUST pass with no errors
 - If fails: fix and retry
 
-#### 7.2 Start Check
+#### 9.2 Test Check
+```bash
+go test ./... -v
+```
+- ALL tests MUST pass
+- If fails: fix and retry
+
+#### 9.3 Start Check
 ```bash
 docker-compose up -d
 ```
 - Wait for containers to be ready (max 60s)
 - Check logs: `docker-compose logs`
 
-#### 7.3 Health Check
+#### 9.4 Health Check
 ```bash
 curl http://localhost:8080/health
 ```
 - MUST return 200 OK
 - If fails: check logs, fix, restart
 
-#### 7.4 Result
+#### 9.5 Result
 - All passed → Development complete
-- Any failed → Fix → Return to 7.1
+- Any failed → Fix → Return to 9.1
 
 **DO NOT claim completion without passing all checks.**
 
@@ -288,4 +524,6 @@ curl http://localhost:8080/health
 - **DDD Layers** - Respect layer boundaries, dependencies flow inward
 - **Repository Pattern** - Domain doesn't know about database
 - **API Contract Compliance** - Match OpenAPI spec exactly
-- **Verification Required** - Must compile and start successfully
+- **Requirements Traceability** - Every requirement maps to code
+- **Test Coverage** - Unit tests for all layers
+- **Verification Required** - Must compile, test, and start successfully

@@ -4,11 +4,12 @@ A comprehensive development workflow plugin that guides you through the entire s
 
 ## Features
 
-- **Structured Workflow**: Sequential stages ensure nothing is missed
-- **Proactive Clarification**: AI asks clarifying questions to eliminate ambiguity
-- **Contract-First Design**: API contracts enable parallel frontend/backend development
+- **Parallel Development**: Frontend and backend develop simultaneously using shared API contracts
+- **Proactive Clarification**: AI asks clarifying questions to eliminate ambiguity (for BOTH frontend and backend)
+- **Contract-First Design**: API contracts defined before implementation enable true parallel work
+- **Mock-First Frontend**: Frontend uses MSW mocks while backend is being developed
 - **DDD Architecture**: Domain-Driven Design for backend systems
-- **Modern Frontend Stack**: React + TypeScript + shadcn/ui
+- **Modern Frontend Stack**: React + TypeScript + shadcn/ui + MSW
 - **Comprehensive Testing**: Test pyramid with unit, integration, and E2E tests
 
 ## Installation
@@ -46,25 +47,67 @@ git clone <repo-url> ~/.claude/plugins/dev-workflow
 ## Workflow Stages
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Requirements  │───▶│   Architecture  │───▶│     Storage     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                                      │
-       ┌──────────────────────────────────────────────┘
-       ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                      Development                            │
-│  ┌─────────────────┐              ┌─────────────────┐      │
-│  │     Backend     │              │    Frontend     │      │
-│  │  (Go + DDD)     │              │ (React + TS)    │      │
-│  └─────────────────┘              └─────────────────┘      │
+│                    Phase 1: REQUIREMENTS                    │
+│           (captures BOTH frontend AND backend needs)        │
 └─────────────────────────────────────────────────────────────┘
-       │
-       ▼
-┌─────────────────┐
-│    QA Testing   │
-└─────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Phase 2: ARCHITECTURE                    │
+│                                                             │
+│  Outputs:                                                   │
+│  - docs/architecture.md                                     │
+│  - docs/api-contracts/*.yaml  ← ENABLES PARALLEL DEV        │
+│  - docs/frontend-architecture/*.md                          │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     Phase 3: STORAGE                        │
+│                   (per backend system)                      │
+└─────────────────────────────────────────────────────────────┘
+                              │
+        ┌─────────────────────┴─────────────────────┐
+        │         Phase 4: PARALLEL DEVELOPMENT     │
+        │                                           │
+        ▼                                           ▼
+┌─────────────────┐                     ┌─────────────────┐
+│     Backend     │                     │    Frontend     │
+│   (Go + DDD)    │                     │  (React + TS)   │
+│                 │                     │                 │
+│ - Real APIs     │                     │ - Mock APIs     │
+│ - Database      │                     │ - UI Components │
+└─────────────────┘                     └─────────────────┘
+        │                                           │
+        └─────────────────────┬─────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Phase 5: INTEGRATION                     │
+│  - Connect frontend to real backend                         │
+│  - Disable mocks, verify API contract compliance            │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Phase 6: QA                            │
+│  - Unit tests (backend + frontend)                          │
+│  - Integration tests, E2E tests                             │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+### Key Innovation: Parallel Development
+
+**API Contract as Source of Truth**: Once `docs/api-contracts/*.yaml` is defined, both frontend and backend can develop simultaneously:
+
+| Track | What It Does | Blocking? |
+|-------|--------------|-----------|
+| **Backend** | Implements real API endpoints | No - independent |
+| **Frontend** | Uses MSW mocks based on same contract | No - independent |
+| **Integration** | Connects frontend to real backend | Waits for both |
+
+This eliminates the traditional bottleneck where frontend waits for backend APIs.
 
 ### Stage 1: Requirements (`/dev-workflow:requirements`)
 
@@ -72,21 +115,23 @@ git clone <repo-url> ~/.claude/plugins/dev-workflow
 
 - Collaborative requirements gathering through dialogue
 - User Stories with acceptance criteria
+- **Frontend Requirements**: UI/UX, device support, accessibility, i18n
+- **Backend Requirements**: API design, data model, business logic
 - Proactive clarification of edge cases, error handling, user roles
 - Priority assignment (P0/P1/P2)
-- Non-functional requirements
 
 ### Stage 2: Architecture (`/dev-workflow:architecture`)
 
 **Output**:
 - `docs/architecture.md`
-- `docs/api-contracts/<system>.yaml`
+- `docs/api-contracts/<system>.yaml` ← **Shared contract for parallel dev**
+- `docs/frontend-architecture/<system>.md` ← **Frontend architecture**
 - `docs/grpc-contracts/*.proto` (if needed)
 
 - System split proposal with trade-offs
-- Frontend/Backend communication contracts
-- API design with error codes
-- Authentication and authorization strategy
+- **Frontend architecture**: State management, routing, component structure
+- **Backend architecture**: API design, database design
+- **Mock strategy**: How frontend will mock APIs during parallel development
 
 ### Stage 3: Storage (`/dev-workflow:storage`)
 
@@ -110,54 +155,91 @@ git clone <repo-url> ~/.claude/plugins/dev-workflow
 
 ### Stage 5: Frontend Development (`/dev-workflow:frontend`)
 
-**Tech Stack**: React 18+ + TypeScript + Vite + shadcn/ui + Tailwind CSS
+**Tech Stack**: React 18+ + TypeScript + Vite + shadcn/ui + Tailwind CSS + MSW
+
+**Can start immediately after Architecture** (doesn't wait for backend!)
 
 **Output**: Complete frontend system with:
 - Feature-based architecture
 - Hooks for logic, components for UI
-- API client layer
+- **MSW mock handlers** based on API contracts
+- API client layer (works with mocks or real backend)
 - Dockerfile and docker-compose.yaml
 
-### Stage 6: QA Testing (`/dev-workflow:qa`)
+### Stage 6: Integration
+
+**After both frontend and backend are complete:**
+
+- Switch frontend from mocks to real backend
+- Verify all API endpoints work correctly
+- Fix any contract mismatches
+- Run integration tests
+
+### Stage 7: QA Testing (`/dev-workflow:qa`)
 
 **Test Pyramid**:
 - Unit tests (most) - Domain logic, utilities, hooks
 - Integration tests (medium) - API endpoints, component interactions
 - E2E tests (few) - Critical user flows
 
-## Project Structure
+## Project Structure (Standard Monorepo Layout)
 
 ```
-your-project/
-├── docs/
-│   ├── requirements.md           # Stage 1 output
-│   ├── architecture.md           # Stage 2 output
-│   ├── api-contracts/            # Stage 2 output
-│   │   └── <system>.yaml
-│   ├── grpc-contracts/           # Stage 2 output (if needed)
-│   │   └── <service>.proto
-│   └── storage/                  # Stage 3 output
-│       └── <system>.md
-├── backend-<name>/               # Stage 4 output
+project-root/
+│
+├── docs/                              # ALL DOCUMENTATION
+│   ├── requirements.md                # Phase 1: Requirements
+│   ├── architecture.md                # Phase 2: System architecture
+│   ├── api-contracts/                 # Phase 2: SHARED API CONTRACTS
+│   │   └── api.yaml                   # ← Enables parallel development
+│   ├── frontend-architecture/         # Phase 2: Frontend architecture
+│   │   └── frontend.md
+│   ├── storage/                       # Phase 3: Storage design
+│   │   └── backend.md
+│   └── grpc-contracts/                # Phase 2: gRPC (if needed)
+│       └── <service>.proto
+│
+├── backend/                           # ALL BACKEND CODE
 │   ├── cmd/server/
+│   │   └── main.go
 │   ├── internal/
-│   │   ├── domain/
-│   │   ├── application/
-│   │   ├── infrastructure/
-│   │   └── interfaces/
+│   │   ├── domain/                    # DDD: Entities, Value Objects
+│   │   ├── application/               # DDD: Use Cases, DTOs
+│   │   ├── infrastructure/            # DDD: DB, External Services
+│   │   └── interfaces/                # DDD: HTTP/gRPC Handlers
 │   ├── migrations/
+│   ├── api/                           # Copy of API contracts
 │   ├── Dockerfile
-│   └── docker-compose.yaml
-└── frontend-<name>/              # Stage 5 output
-    ├── src/
-    │   ├── components/
-    │   ├── features/
-    │   ├── hooks/
-    │   ├── api/
-    │   └── types/
-    ├── Dockerfile
-    └── docker-compose.yaml
+│   ├── docker-compose.yaml
+│   ├── Makefile
+│   └── go.mod
+│
+├── frontend/                          # ALL FRONTEND CODE
+│   ├── src/
+│   │   ├── components/                # Shared UI components
+│   │   ├── features/                  # Feature modules
+│   │   ├── hooks/                     # Shared hooks
+│   │   ├── api/                       # API client layer
+│   │   ├── mocks/                     # MSW mock handlers
+│   │   │   ├── handlers.ts            # Generated from api-contracts
+│   │   │   └── browser.ts
+│   │   ├── stores/                    # Global state
+│   │   └── types/                     # TypeScript types
+│   ├── public/
+│   ├── Dockerfile
+│   ├── docker-compose.yaml
+│   ├── package.json
+│   └── vite.config.ts
+│
+├── docker-compose.yaml                # Root: Full stack orchestration
+└── README.md
 ```
+
+**Key Layout Rules:**
+- `docs/` - All documentation, contracts, and design documents
+- `backend/` - All backend code (single directory, not `backend-<name>/`)
+- `frontend/` - All frontend code (single directory, not `frontend-<name>/`)
+- Root `docker-compose.yaml` - Orchestrates full stack for development
 
 ## Usage Example
 
