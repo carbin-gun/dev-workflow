@@ -6,8 +6,8 @@
     "name": "carbin-gun",
     "email": "cilendeng@gmail.com"
   },
-  "homepage": "github.com/carbin-gun/dev-workflow",
-  "repository": "github.com/carbin-gun/dev-workflow",
+  "homepage": "https://github.com/carbin-gun/dev-workflow",
+  "repository": "https://github.com/carbin-gun/dev-workflow",
   "keywords": ["workflow", "requirements", "architecture", "backend", "frontend", "qa", "ddd"],
   "commands": [
     "./commands/"
