@@ -3,4 +3,4 @@ description: "Requirements gathering with User Stories and proactive clarificati
 disable-model-invocation: true
 ---
 
-Invoke the dev-workflow:requirements skill and follow it exactly as presented to you
+Use the Skill tool to invoke `dev-workflow:gathering-requirements` and follow it exactly as presented to you

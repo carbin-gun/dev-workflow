@@ -1,5 +1,5 @@
 ---
-name: backend
+name: developing-backend
 description: Use when developing a backend system - requires architecture.md, storage design, and API contracts to exist for the target system
 ---
 

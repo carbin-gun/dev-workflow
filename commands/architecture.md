@@ -3,4 +3,4 @@ description: "System architecture design with proactive questioning on boundarie
 disable-model-invocation: true
 ---
 
-Invoke the dev-workflow:architecture skill and follow it exactly as presented to you
+Use the Skill tool to invoke `dev-workflow:designing-architecture` and follow it exactly as presented to you

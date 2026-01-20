@@ -1,5 +1,5 @@
 ---
-name: master
+name: orchestrating-workflow
 description: Use when starting a new project from scratch or resuming an incomplete project workflow - orchestrates the full development flow from requirements to QA
 ---
 

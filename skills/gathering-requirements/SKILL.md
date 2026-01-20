@@ -1,5 +1,5 @@
 ---
-name: requirements
+name: gathering-requirements
 description: Use when starting a new project or when docs/requirements.md is missing - guides collaborative requirements gathering through User Stories with proactive clarification
 ---
 

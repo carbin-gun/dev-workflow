@@ -1,5 +1,5 @@
 ---
-name: storage
+name: designing-storage
 description: Use when docs/architecture.md exists but docs/storage/ is incomplete - designs data models and storage for each backend system
 ---
 
