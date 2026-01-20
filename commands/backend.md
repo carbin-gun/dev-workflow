@@ -13,4 +13,5 @@ This skill will:
 
 Prerequisites: `docs/architecture.md`, `docs/storage/<system>.md`, and `docs/api-contracts/<system>.yaml` must exist.
 
-Run `/dev-workflow:backend` to start.
+Invoke the dev-workflow:backend skill and follow it exactly as presented to you
+

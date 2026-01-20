@@ -13,4 +13,5 @@ This skill will:
 
 Prerequisite: `docs/requirements.md` must exist.
 
-Run `/dev-workflow:architecture` to start.
+Invoke the dev-workflow:architecture skill and follow it exactly as presented to you
+

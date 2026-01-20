@@ -13,4 +13,4 @@ This skill will:
 
 Prerequisite: Target system code must exist and start successfully.
 
-Run `/dev-workflow:qa` to start.
+Invoke the dev-workflow:qa skill and follow it exactly as presented to you

@@ -13,4 +13,4 @@ This skill will:
 
 Prerequisites: `docs/requirements.md` and `docs/architecture.md` must exist.
 
-Run `/dev-workflow:storage` to start.
+Invoke the dev-workflow:storage skill and follow it exactly as presented to you
