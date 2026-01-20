@@ -1,0 +1,15 @@
+{
+  "name": "dev-workflow",
+  "description": "Development workflow plugin: requirements gathering, architecture design, storage design, backend/frontend development, and QA testing",
+  "version": "1.0.0",
+  "author": {
+    "name": "carbin-gun"
+  },
+  "keywords": ["workflow", "requirements", "architecture", "backend", "frontend", "qa", "ddd"],
+  "commands": [
+    "./commands/"
+  ],
+  "skills": [
+    "./skills/"
+  ]
+}
