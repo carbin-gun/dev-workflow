@@ -44,12 +44,28 @@ When user's answer is vague, mark it and revisit:
 
 Before finalizing document, list ALL uncertainty markers and ask user to resolve.
 
+### Frontend/UI Requirements - MUST ASK
+
+For EVERY project with a frontend, proactively ask:
+
+| Dimension | Example Questions |
+|-----------|-------------------|
+| **设备支持** | "需要支持移动端吗？平板？响应式还是单独设计？" |
+| **设计风格** | "有设计稿吗？偏好什么风格？（简约/企业级/活泼）" |
+| **组件库** | "有偏好的 UI 组件库吗？Ant Design/Element/shadcn?" |
+| **交互体验** | "列表空状态显示什么？加载用骨架屏还是 spinner？" |
+| **无障碍** | "需要支持无障碍访问吗？键盘导航？屏幕阅读器？" |
+| **浏览器** | "需要支持哪些浏览器？IE11？移动端浏览器？" |
+| **国际化** | "需要多语言支持吗？RTL 布局？" |
+| **主题** | "需要深色模式吗？用户可切换主题？" |
+
 ### Challenge Assumptions
 
 When user says something like:
 - "就像 XXX 那样" → 追问: "XXX 的哪些具体行为是你想要的？"
 - "正常的 CRUD" → 追问: "删除需要确认吗？批量操作需要吗？"
 - "简单的列表" → 追问: "需要分页吗？排序？筛选？搜索？"
+- "简单的界面" → 追问: "需要响应式吗？移动端适配？深色模式？"
 
 ## Process
 
@@ -169,16 +185,33 @@ Create `docs/requirements.md` with structure:
 | ID | Feature | Description | Priority | Dependencies |
 |----|---------|-------------|----------|--------------|
 
-## 4. Non-Functional Requirements
+## 4. Frontend Requirements
+
+### 4.1 UI/UX Requirements
+- Design style and branding
+- Component library choice
+- Empty states, loading states, error states
+
+### 4.2 Device & Browser Support
+- Responsive design requirements
+- Browser compatibility matrix
+- Mobile/tablet support
+
+### 4.3 Accessibility & i18n
+- Accessibility requirements (WCAG level)
+- Internationalization needs
+- Theme support (dark mode, etc.)
+
+## 5. Non-Functional Requirements
 - Performance
 - Security
 - Availability
 
-## 5. Boundaries & Constraints
+## 6. Boundaries & Constraints
 - Out of scope
 - Technical constraints
 
-## 6. Open Questions (TBD)
+## 7. Open Questions (TBD)
 Items deferred for later decision.
 ```
 

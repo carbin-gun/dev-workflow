@@ -21,8 +21,23 @@ Design system architecture by splitting the project into frontend and backend sy
 ## Output
 
 - `docs/architecture.md`
-- `docs/api-contracts/<backend-system>.yaml` (per backend system)
+- `docs/api-contracts/api.yaml` (shared API contract - enables parallel development)
+- `docs/frontend-architecture/frontend.md` (frontend architecture)
 - `docs/grpc-contracts/*.proto` (if backend-to-backend communication needed)
+
+**Standard Monorepo Layout:**
+```
+project-root/
+├── docs/                        # ALL documentation
+│   ├── architecture.md
+│   ├── api-contracts/
+│   │   └── api.yaml             # Shared contract
+│   └── frontend-architecture/
+│       └── frontend.md
+├── backend/                     # ALL backend code
+├── frontend/                    # ALL frontend code
+└── docker-compose.yaml          # Root: runs full stack
+```
 
 ## Proactive Clarification Rules
 
@@ -58,6 +73,18 @@ For each API endpoint:
 | **数据同步** | "服务间数据如何保持同步？实时还是最终一致？" |
 | **服务发现** | "服务如何互相发现？用注册中心还是 DNS？" |
 | **熔断降级** | "依赖的服务挂了怎么办？需要降级策略吗？" |
+
+### Frontend Architecture Challenges
+
+| Aspect | Challenge Questions |
+|--------|---------------------|
+| **状态管理** | "全局状态用什么方案？Context / Redux / Zustand / Jotai？" |
+| **路由策略** | "路由用什么方案？React Router / TanStack Router？需要权限路由吗？" |
+| **数据获取** | "数据获取用什么？fetch / axios / TanStack Query / SWR？" |
+| **表单处理** | "复杂表单用什么方案？React Hook Form / Formik？" |
+| **组件设计** | "组件粒度如何划分？原子设计还是按功能？" |
+| **样式方案** | "样式用什么？Tailwind / CSS Modules / styled-components？" |
+| **Mock 策略** | "后端未完成时前端如何开发？MSW / JSON Server / 手写 Mock？" |
 
 ### Uncertainty Markers
 
@@ -198,7 +225,80 @@ For backend-to-backend communication:
 - "这个 RPC 调用的超时时间应该设多少？"
 - "返回数据量大吗？需要分页或流式传输吗？"
 
-### Step 6: Resolve Uncertainties
+### Step 6: Design Frontend Architecture
+
+For each frontend system, create `docs/frontend-architecture/<system>.md`:
+
+**追问：**
+- "前端需要哪些页面？路由结构是什么？"
+- "哪些页面需要登录才能访问？权限如何控制？"
+- "全局状态有哪些？用户信息？主题？语言？"
+
+**Frontend Architecture Template:**
+```markdown
+# Frontend Architecture: <system-name>
+
+## 1. Tech Stack
+- Framework: React 18+ / Vue 3
+- UI Library: shadcn/ui / Ant Design / Element Plus
+- State Management: Context / Zustand / Pinia
+- Data Fetching: TanStack Query / SWR / axios
+- Routing: React Router / Vue Router
+- Styling: Tailwind CSS
+
+## 2. Project Structure
+```
+src/
+├── components/     # Shared UI components
+├── features/       # Feature modules
+├── hooks/          # Shared hooks
+├── api/            # API client layer
+├── stores/         # Global state
+├── types/          # TypeScript types
+└── utils/          # Utilities
+```
+
+## 3. Routing Structure
+| Route | Page | Auth Required |
+|-------|------|---------------|
+
+## 4. State Management
+### Global State
+- User session
+- Theme/Language preferences
+- App-wide notifications
+
+### Server State (API Cache)
+- Managed by TanStack Query / SWR
+
+## 5. API Integration
+- Base URL configuration
+- Error handling strategy
+- Auth token management
+- **Mock Strategy**: MSW / JSON Server for parallel development
+
+## 6. Key Architecture Decisions
+| Decision | Options | Choice | Reason |
+|----------|---------|--------|--------|
+```
+
+**Critical: Mock API Strategy**
+
+To enable parallel frontend/backend development:
+
+```markdown
+## Mock Strategy
+
+Frontend can start development immediately using:
+- **MSW (Mock Service Worker)**: Intercepts network requests
+- **JSON Server**: Quick REST API mock
+- **Hand-written mocks**: Simple fetch wrapper
+
+Mock data location: `src/mocks/`
+Enable in development: `VITE_USE_MOCK=true`
+```
+
+### Step 7: Resolve Uncertainties
 
 **Before finalizing, list all `<!-- ARCH-DECISION -->` and `<!-- ARCH-TRADEOFF -->` markers:**
 
@@ -251,14 +351,38 @@ Create `docs/architecture.md`:
 - Timeout: 5s default
 - Retry: 3 times with exponential backoff
 
-## 3. System Details
+## 3. Backend System Details
 
-### 3.1 <system-name>
+### 3.1 <backend-system-name>
 - Responsibility boundary
 - External API: docs/api-contracts/<system>.yaml
 - Storage design: docs/storage/<system>.md
 
-## 4. Open Architecture Questions
+## 4. Frontend System Details
+
+### 4.1 <frontend-system-name>
+- Pages and routing
+- State management approach
+- API consumption
+- Architecture document: docs/frontend-architecture/<system>.md
+
+## 5. Parallel Development Strategy
+
+### 5.1 API Contract as Source of Truth
+- API contracts (`docs/api-contracts/*.yaml`) enable parallel work
+- Both frontend and backend develop against the same contract
+
+### 5.2 Frontend Mock Strategy
+- Frontend uses MSW/JSON Server for mocks based on API contracts
+- Can start immediately after API contracts are defined
+- Switch to real backend when ready
+
+### 5.3 Integration Phase
+- Connect frontend to real backend
+- Verify contract compliance
+- E2E testing
+
+## 6. Open Architecture Questions
 Items deferred for later decision.
 ```
 

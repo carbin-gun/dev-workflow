@@ -19,19 +19,33 @@ Design data models and storage strategy for each backend system, following a dat
 
 ## Output
 
-`docs/storage/<backend-system>.md` (one per backend system)
+`docs/storage/backend.md`
+
+**Standard Layout:**
+```
+project-root/
+├── docs/
+│   ├── requirements.md
+│   ├── architecture.md
+│   ├── api-contracts/
+│   │   └── api.yaml
+│   └── storage/
+│       └── backend.md       ← Storage design for backend
+├── backend/
+└── frontend/
+```
 
 ## Process
 
-### Step 1: Identify Backend Systems
+### Step 1: Check Existing Storage Design
 
-Read `docs/architecture.md` and list all backend systems.
+Read `docs/architecture.md` to understand backend requirements.
 
-Check existing storage docs in `docs/storage/`:
-- Which systems already have storage design?
-- Which need to be created?
+Check if `docs/storage/backend.md` exists:
+- If exists: Review and update if needed
+- If missing: Create new storage design
 
-Ask user which system to design (or all remaining).
+Confirm with user before proceeding.
 
 ### Step 2: For Each Backend System
 
@@ -113,10 +127,10 @@ Analyze query patterns from requirements:
 
 ### Step 3: Generate Storage Document
 
-Create `docs/storage/<backend-system>.md`:
+Create `docs/storage/backend.md`:
 
 ```markdown
-# <Backend System> Storage Design
+# Backend Storage Design
 
 ## 1. Storage Selection
 
