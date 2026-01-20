@@ -8,11 +8,6 @@
   },
   "homepage": "https://github.com/carbin-gun/dev-workflow",
   "repository": "https://github.com/carbin-gun/dev-workflow",
-  "keywords": ["workflow", "requirements", "architecture", "backend", "frontend", "qa", "ddd"],
-  "commands": [
-    "./commands/"
-  ],
-  "skills": [
-    "./skills/"
-  ]
+  "license": "MIT",
+  "keywords": ["workflow", "requirements", "architecture", "backend", "frontend", "qa", "ddd"]
 }
