@@ -1,5 +1,5 @@
 ---
-name: qa
+name: testing-qa
 description: Use when system code is complete and needs testing - implements test pyramid with unit, integration, and E2E tests for both frontend and backend systems
 ---
 

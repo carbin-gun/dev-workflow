@@ -1,5 +1,5 @@
 ---
-name: architecture
+name: designing-architecture
 description: Use when docs/requirements.md exists but docs/architecture.md is missing - designs system architecture with proactive questioning on boundaries and trade-offs
 ---
 

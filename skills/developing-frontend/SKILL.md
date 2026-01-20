@@ -1,5 +1,5 @@
 ---
-name: frontend
+name: developing-frontend
 description: Use when developing a frontend system - requires architecture.md and API contracts to exist for the backend systems it consumes
 ---
 

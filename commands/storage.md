@@ -3,4 +3,4 @@ description: "Data model and storage design for backend systems"
 disable-model-invocation: true
 ---
 
-Invoke the dev-workflow:storage skill and follow it exactly as presented to you
+Use the Skill tool to invoke `dev-workflow:designing-storage` and follow it exactly as presented to you
