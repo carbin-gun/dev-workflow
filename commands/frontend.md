@@ -1,17 +1,6 @@
 ---
-name: frontend
-description: Frontend development with React + TypeScript + shadcn/ui
+description: "Frontend development with React + TypeScript + shadcn/ui"
+disable-model-invocation: true
 ---
 
-Use the `dev-workflow:frontend` skill to develop frontend systems.
-
-This skill will:
-- Create React + TypeScript project with Vite
-- Setup shadcn/ui and Tailwind CSS
-- Implement feature-based architecture with hooks/components separation
-- Verify build and startup
-
-Prerequisites: `docs/architecture.md` and `docs/api-contracts/*.yaml` must exist.
-
 Invoke the dev-workflow:frontend skill and follow it exactly as presented to you
-
